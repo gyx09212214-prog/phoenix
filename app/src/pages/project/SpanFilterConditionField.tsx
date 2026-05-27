@@ -251,6 +251,16 @@ export function SpanFilterConditionField(props: SpanFilterConditionFieldProps) {
   const { filterCondition, setFilterCondition, appendFilterCondition } =
     useSpanFilters();
   const deferredFilterCondition = useDeferredValue(filterCondition);
+  // Mark "not yet validated" as soon as a new non-empty filter arrives,
+  // before the async validator returns.
+  const [prevDeferredFilterCondition, setPrevDeferredFilterCondition] =
+    useState(deferredFilterCondition);
+  if (prevDeferredFilterCondition !== deferredFilterCondition) {
+    setPrevDeferredFilterCondition(deferredFilterCondition);
+    if (deferredFilterCondition.trim() !== "") {
+      setIsConditionValidState(false);
+    }
+  }
   const { theme } = useTheme();
   const codeMirrorTheme = theme === "light" ? pierreLight : pierreDark;
 
@@ -285,10 +295,6 @@ export function SpanFilterConditionField(props: SpanFilterConditionFieldProps) {
 
   useEffect(() => {
     let isCancelled = false;
-
-    if (deferredFilterCondition.trim() !== "") {
-      setIsConditionValidState(false);
-    }
 
     void validateSpanFilterCondition(deferredFilterCondition, projectId).then(
       (result) => {
