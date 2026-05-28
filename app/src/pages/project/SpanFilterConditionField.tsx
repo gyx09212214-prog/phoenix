@@ -251,20 +251,24 @@ export function SpanFilterConditionField(props: SpanFilterConditionFieldProps) {
   const { filterCondition, setFilterCondition, appendFilterCondition } =
     useSpanFilters();
   const deferredFilterCondition = useDeferredValue(filterCondition);
-  // Mark "not yet validated" as soon as a new non-empty filter arrives,
-  // before the async validator returns.
-  const [prevDeferredFilterCondition, setPrevDeferredFilterCondition] =
-    useState(deferredFilterCondition);
-  if (prevDeferredFilterCondition !== deferredFilterCondition) {
-    setPrevDeferredFilterCondition(deferredFilterCondition);
+  const projectId = useTracingContext((state) => state.projectId);
+  // Mark "not yet validated" as soon as a new non-empty filter or project
+  // arrives, before the project-scoped async validator returns.
+  const [prevValidationInput, setPrevValidationInput] = useState(() => ({
+    deferredFilterCondition,
+    projectId,
+  }));
+  const hasValidationInputChanged =
+    prevValidationInput.deferredFilterCondition !== deferredFilterCondition ||
+    prevValidationInput.projectId !== projectId;
+  if (hasValidationInputChanged) {
+    setPrevValidationInput({ deferredFilterCondition, projectId });
     if (deferredFilterCondition.trim() !== "") {
       setIsConditionValidState(false);
     }
   }
   const { theme } = useTheme();
   const codeMirrorTheme = theme === "light" ? pierreLight : pierreDark;
-
-  const projectId = useTracingContext((state) => state.projectId);
 
   const filterConditionFieldRef = useRef<HTMLDivElement>(null);
 
