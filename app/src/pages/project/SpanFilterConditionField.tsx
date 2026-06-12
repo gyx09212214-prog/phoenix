@@ -245,11 +245,14 @@ export function SpanFilterConditionField(props: SpanFilterConditionFieldProps) {
     placeholder = "filter condition (e.x. span_kind == 'LLM')",
   } = props;
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [isConditionValidState, setIsConditionValidState] =
-    useState<boolean>(true);
-  const [errorMessage, setErrorMessage] = useState<string>("");
   const { filterCondition, setFilterCondition, appendFilterCondition } =
     useSpanFilters();
+  // A filter restored on mount starts as "not yet validated" so it isn't
+  // advertised as valid before the async validator resolves.
+  const [isConditionValidState, setIsConditionValidState] = useState<boolean>(
+    () => filterCondition.trim() === ""
+  );
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const deferredFilterCondition = useDeferredValue(filterCondition);
   const projectId = useTracingContext((state) => state.projectId);
   // Mark "not yet validated" as soon as a new non-empty filter or project

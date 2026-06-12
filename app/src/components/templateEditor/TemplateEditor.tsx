@@ -51,6 +51,11 @@ const baseExtensions = [
  * or, when the readOnly prop is true, the editor will reset on all value changes.
  * This is necessary because controlled react-codemirror editors incessantly reset
  * cursor position when value is updated.
+ *
+ * The `readOnly` prop must stay fixed for the lifetime of the component:
+ * toggling it from true to false would snap the displayed value back to the
+ * mount-time `defaultValue`, discarding any `defaultValue` updates mirrored
+ * while read-only. Re-mount (e.g. via `key`) instead of toggling.
  */
 export const TemplateEditor = ({
   templateFormat,
